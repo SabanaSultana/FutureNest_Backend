@@ -1,14 +1,18 @@
 const User = require("../Models/User");
-
 const Children = require("../Models/Children");
 
-// add Children details
-export const addChildren = async (req, res) => {
+// *****add Children details*******
+exports.addChildren = async (req, res) => {
   try {
-    const { firstName, lastName, age, photoUrl, videoUrl, description } =
-      req.body;
-
-    const orphanageId = req.param;
+    const {
+      firstName,
+      lastName,
+      age,
+      photoUrl,
+      videoUrl,
+      description,
+      orphanageId,
+    } = req.body;
 
     if (
       !firstName ||
@@ -16,22 +20,24 @@ export const addChildren = async (req, res) => {
       !age ||
       !photoUrl ||
       !videoUrl ||
-      !description
+      !educationDetails ||
+      !description ||
+      !orphanageId
     ) {
       return res.status(400).json({
         success: false,
-        msg: "Pls fill all the feilds",
+        msg: "All fields are required",
       });
     }
 
     //add details in db
-
     const childrenDetails = await Children.create({
       firstName,
       lastName,
       age,
       photoUrl,
       videoUrl,
+      educationDetails,
       description,
     });
 
@@ -56,22 +62,59 @@ export const addChildren = async (req, res) => {
   }
 };
 
-//get Children details
-
-exports.getChildrenDetails = async (req, res) => {
+// *****get Children details by orphange id ********
+exports.getChildrenByOrphanageId = async (req, res) => {
   try {
-    const childrenDetails = await Children.find();
+    const orphanageId = req.params.orphanageId;
 
-    if (!childrenDetails) {
-      return res.status(401).json({
+    const orphanage = await User.findById(orphanageId).populate("children");
+    if (!orphanage) {
+      return res.status(404).json({
         success: false,
-        msg: "No children found ",
+        msg: "Orphanage not found",
+      });
+    }
+
+    // Fetch the children related to this orphanage
+    const childrenDetails = orphanage.children;
+
+    if (!childrenDetails || childrenDetails.length === 0) {
+      return res.status(404).json({
+        success: false,
+        msg: "No children found for this orphanage",
       });
     }
 
     return res.status(200).json({
       success: true,
-      childrenDetails,
+      children: childrenDetails,
+    });
+  } catch (error) {
+    console.error("Error fetching children:", error);
+    res.status(500).json({
+      success: false,
+      msg: "An error occurred while fetching children details from a specific orphanage",
+    });
+  }
+};
+
+//*******get Children details by id*********
+exports.getChildrenDetailsById = async (req, res) => {
+  try {
+    const childrenId = req.params.id; // Use req.params.id to get the ID from the URL
+
+    const child = await Children.findById({ _id: childrenId });
+
+    if (!child) {
+      return res.status(401).json({
+        success: false,
+        msg: "child doesn't exist",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      child,
     });
   } catch (error) {
     console.error("Error getting child:", error);
@@ -82,11 +125,10 @@ exports.getChildrenDetails = async (req, res) => {
   }
 };
 
-//update Children details
-
+//*******update Children details*********
 exports.updateChildrenDetails = async (req, res) => {
   try {
-    const childrenId = req.param;
+    const { childrenId } = req.body; // from dashboard of each orphnage
     const { firstName, lastName, age, photoUrl, videoUrl, description } =
       req.body;
 
@@ -113,7 +155,7 @@ exports.updateChildrenDetails = async (req, res) => {
     res.status(200).json({
       success: true,
       msg: "Child details updated successfully",
-      updatedChildDetails:child,
+      updatedChildDetails: child,
     });
   } catch (error) {
     console.error("Error getting child:", error);
@@ -124,25 +166,25 @@ exports.updateChildrenDetails = async (req, res) => {
   }
 };
 
-//delete Children Details
+//*******delete Children Details*******
 
-export const deleteChildrenDetails=async(req,res)=>{
-    try {
-      //fetch child id from req body
-      const childId = req.params;
+exports.deleteChildrenDetails = async (req, res) => {
+  try {
+    //fetch child id from req body
+    const { childId } = req.body;
 
-      // delete child from Children Schema
-      await Children.findByIdAndDelete({ childId });
+    // delete child from Children Schema
+    await Children.findByIdAndDelete({ childId });
 
-      return res.status(200).json({
-        success: true,
-        msg: "Child details deleted successfully ",
-      });
-    } catch (error) {
-      console.log("Error occuring while deleting Child details  ", error);
-      return res.status(500).json({
-        success: false,
-        msg: "Child details deletion has failed ",
-      });
-    }
-}
+    return res.status(200).json({
+      success: true,
+      msg: "Child details deleted successfully ",
+    });
+  } catch (error) {
+    console.log("Error occuring while deleting Child details  ", error);
+    return res.status(500).json({
+      success: false,
+      msg: "Child details deletion has failed ",
+    });
+  }
+};

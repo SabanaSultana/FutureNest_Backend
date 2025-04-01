@@ -27,12 +27,8 @@ const childrenSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  orphange: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  education:{
-   type:String,
+  educationDetails:{
+    type:String,
     required:true,
   },
   description: {

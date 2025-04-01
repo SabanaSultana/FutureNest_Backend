@@ -3,50 +3,39 @@ const User = require("../Models/User");
 
 exports.bookMeet = async (req, res) => {
   try {
-    const { userId, orphanageId, purpose } = req.body;
+    const { userId, orphanageId } = req.body;
 
-    // Validate inputs
-    if (!userId || !orphanageId || !purpose) {
+    if (!userId || !orphanageId) {
       return res.status(400).json({
         success: false,
         msg: "All fields are required",
       });
     }
-
-    // Fetch user email
+   // Find user by ID
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        msg: "User not found",
-      });
+        return res.status(404).json({
+            success: false,
+            msg: "User not found",
+        });
     }
+    
+    // Fetch user email
+    const userEmail = user.email;
+    const userPurpose = user.purpose;
 
-    // Fetch orphanage email
     const orphanage = await User.findById(orphanageId);
     if (!orphanage) {
-      return res.status(404).json({
-        success: false,
-        msg: "Orphanage not found",
-      });
+        return res.status(404).json({
+            success: false,
+            msg: "Orphanage not found",
+        });
     }
-
-    // Create a new meeting request
-    const newMeeting = new BookMeet({
-      user: userId,
-      orphanage: orphanageId,
-    });
-
-    await newMeeting.save();
-
-    return res.status(201).json({
-      success: true,
-      msg: "Meeting booked successfully",
-      userEmail: user.email,
-      orphanageEmail: orphanage.email,
-    });
+    // Fetch orphanage email
+    const orphanageEmail = orphanage.email;
+    // VVII ***** Send email to orphanage (Further work) ***** then return success response 
   } catch (error) {
-    console.error("Error booking meeting:", error);
+    console.error("Error while booking a meeting:", error);
     return res.status(500).json({
       success: false,
       msg: "Internal server error",
