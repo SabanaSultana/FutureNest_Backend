@@ -1,11 +1,11 @@
-//Login and Signup and Logout controller
+//Login, Signup and Logout controller
 const User = require("../Models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 
-// Signup
+// **********************  Signup  **********************
 exports.signUp = async () => {
   try {
     // fetch data from request body
@@ -16,7 +16,8 @@ exports.signUp = async () => {
       email,
       accountType,
       password,
-      confirmPassword,
+      photo,
+      purpose,
     } = req.body;
     // validation
 
@@ -28,7 +29,7 @@ exports.signUp = async () => {
       !email ||
       !accountType ||
       !password ||
-      !confirmPassword
+      !purpose
     ) {
       return res.status(400).json({
         success: false,
@@ -40,7 +41,7 @@ exports.signUp = async () => {
     if (confirmPassword !== password) {
       return res.status(400).json({
         success: false,
-        msg: "password and confirm password unmatched",
+        msg: "password and confirm password do not match",
       });
     }
 
@@ -64,6 +65,8 @@ exports.signUp = async () => {
       email,
       accountType,
       password: hashPassword,
+      photo,
+      purpose
     });
 
     //return  successfull response
@@ -81,17 +84,16 @@ exports.signUp = async () => {
   }
 };
 
-// Login
+//   ********* Login ***********
 
 exports.login = async (req, res) => {
   try {
     //validation
-
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).josn({
         success: false,
-        msg: "pls fill all the fields",
+        msg: "All fields are required",
       });
     }
 
@@ -104,7 +106,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    console.log("User data while logging ", user);
+    // console.log("User data while logging ", user);
     //compare password
 
     if (await bcrypt.compare(password, user.password)) {
@@ -115,14 +117,14 @@ exports.login = async (req, res) => {
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: "2h",
+        expiresIn: "2d",
       });
       user.token = token;
       user.password = undefined;
 
       //send token to browser  cookie
       const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         httpOnly: true,
       };
 
@@ -145,3 +147,20 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+
+// **************** Logout ****************
+exports.logout = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    return res.status(200).json({
+      success: true,
+      msg: "Logout successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      msg: "Logout failure..pls try again",
+    });
+  }
+}

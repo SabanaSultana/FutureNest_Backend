@@ -1,6 +1,6 @@
 const Contact = require("../Models/ContactUs");
 
-// Contact Us
+// ******Contact Us*********
 export const contactUs = async (req, res) => {
   try {
     const { name, email, subject, message, phoneNumber } = req.body;
@@ -20,6 +20,8 @@ export const contactUs = async (req, res) => {
       message,
       phoneNumber,
     });
+
+    //VVIII ******  After adding it to db send it to the admin email (Further work)  ******
 
     res.status(201).json({
       success: true,

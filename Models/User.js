@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   photo:{
-    type:String,
+    type:String, // make required for orphanage and from frontend
   },
   children: [
     {
