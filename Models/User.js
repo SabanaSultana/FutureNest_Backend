@@ -1,19 +1,14 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  lastName: {
+  name: {
     type: String,
     required: true,
     trim: true,
   },
   phoneNumber: {
     type: Number,
-    required: true
+    required: true,
   },
   email: {
     type: String,
@@ -22,15 +17,15 @@ const userSchema = new mongoose.Schema({
   },
   accountType: {
     type: String,
-    enum: ["Admin", "User", "Orphanage"],
+    enum: ["Admin", "Donor", "Orphanage"],
     required: true,
   },
   password: {
     type: String,
     required: true,
   },
-  photo:{
-    type:String, // make required for orphanage and from frontend
+  photo: {
+    type: String, // make required for orphanages and from frontend
   },
   children: [
     {
@@ -38,13 +33,17 @@ const userSchema = new mongoose.Schema({
       ref: "Children",
     },
   ],
-  additionalInfo:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"AdditionalInfo",
+  additionalInfo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AdditionalInfo",
   },
-  purpose:{
-    type:String,
-    required:true,
+  purpose: {
+    type: String,
+    required: true,
+  },
+  location:{
+    type: String,
+    required: true,
   }
 });
 
