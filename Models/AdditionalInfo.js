@@ -25,15 +25,18 @@ const additionalInfoSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  QRCode:{
-    type:String,
+  QRCode: {
+    type: String,
     // required:true, add this from frontend side
   },
-  description:{
-    type:String,
+  description: {
+    type: String,
     // required:true,add this from frontend side
-  }
-
+  },
+  photo: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("AdditionalInfo", additionalInfoSchema);

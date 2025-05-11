@@ -118,30 +118,30 @@ exports.signUp = async (req,res) => {
     });
     
     //return  successfull response
-    const payload = {
-      email: email,
-      id: user._id,
-      accountType: user.accountType,
-    };
+    // const payload = {
+    //   email: email,
+    //   id: user._id,
+    //   accountType: user.accountType,
+    // };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-      expiresIn: "2d",
-    });
-    user.token = token;
-    user.password = undefined;
+    // const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+    //   expiresIn: "2d",
+    // });
+    // user.token = token;
+    // user.password = undefined;
 
-    //send token to browser  cookie
-    const options = {
-      expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      httpOnly: true,
-    };
+    // //send token to browser  cookie
+    // const options = {
+    //   expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    //   httpOnly: true,
+    // };
 
-    res.cookie("token", token, options).status(200).json({
-      success: true,
-      token,
-      user,
-      msg: "Logged in successfully ",
-    });
+    // res.cookie("token", token, options).status(200).json({
+    //   success: true,
+    //   token,
+    //   user,
+    //   msg: "Logged in successfully ",
+    // });
     return res.status(200).json({
       success: true,
       msg: "User registered successfully ",
