@@ -24,7 +24,7 @@ exports.signUp = async (req,res) => {
     } = req.body;
     // validation
 
-    const { otp } = req.body;
+    // const { otp } = req.body;
 
     // const { photo } = req.files || {};
     // check all feild present or not
@@ -176,7 +176,7 @@ exports.login = async (req, res) => {
     //check user exist or not
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).josn({
+      return res.status(400).json({
         success: false,
         msg: "user doesn't exist",
       });
@@ -202,7 +202,10 @@ exports.login = async (req, res) => {
       const options = {
         expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         httpOnly: true,
+        sameSite: "Strict", 
+        path: "/",
       };
+      
 
       res.cookie("token", token, options).status(200).json({
         success: true,
@@ -275,7 +278,12 @@ exports.sendotp = async (req, res) => {
 // **************** Logout ****************
 exports.logout = async (req, res) => {
   try {
-    res.clearCookie("token");
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "Strict",
+      path: "/",
+    });
+    
     return res.status(200).json({
       success: true,
       msg: "Logout successfully",
@@ -286,4 +294,27 @@ exports.logout = async (req, res) => {
       msg: "Logout failure..pls try again",
     });
   }
+
 }
+
+// **************** Current User ****************
+exports.currentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      msg: "Server error",
+    });
+  }
+};
