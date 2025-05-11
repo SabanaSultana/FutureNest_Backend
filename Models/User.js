@@ -24,9 +24,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  photo: {
-    type: String, // make required for orphanages and from frontend
-  },
+ 
   children: [
     {
       type: mongoose.Schema.Types.ObjectId,

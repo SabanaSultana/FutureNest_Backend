@@ -26,7 +26,7 @@ exports.signUp = async (req,res) => {
 
     const { otp } = req.body;
 
-    const { photo } = req.files || {};
+    // const { photo } = req.files || {};
     // check all feild present or not
     if (
       !name ||
@@ -36,8 +36,7 @@ exports.signUp = async (req,res) => {
       !password ||
       !purpose ||
       !location ||
-      !confirmPassword ||
-      !otp
+      !confirmPassword       
     ) {
       return res.status(400).json({
         success: false,
@@ -45,12 +44,12 @@ exports.signUp = async (req,res) => {
       });
     }
 
-    if (accountType === "Orphanage" && !photo) {
-      return res.status(400).json({
-        success: false,
-        msg: "Please upload images for your organization",
-      });
-    }
+    // if (accountType === "Orphanage" && !photo) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     msg: "Please upload images for your organization",
+    //   });
+    // }
 
     //match password and confirmPassword
     if (confirmPassword !== password) {
@@ -70,15 +69,15 @@ exports.signUp = async (req,res) => {
     }
 
     // OTP Verification
-    // Find the most recent OTP for the email
-    const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
-    console.log(response);
-    if (response.length === 0 || String(response[0].otp) !== String(otp)) {
-      return res.status(400).json({
-        success: false,
-        message: "The OTP is not valid",
-      });
-    }
+    // // Find the most recent OTP for the email
+    // const response = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
+    // console.log(response);
+    // if (response.length === 0 || String(response[0].otp) !== String(otp)) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "The OTP is not valid",
+    //   });
+    // }
 
 
     //Hash password
@@ -86,26 +85,27 @@ exports.signUp = async (req,res) => {
 
     // Upload the Photo of the Organization to Cloudinary  
 
-    let photoUrl = "";
-    try {
-      const cloudinaryResponse = await uploadImageToCloudinary(
-        photo,
-        process.env.FOLDER_NAME
-      );
-      if (!cloudinaryResponse) {
-        throw new Error("Cloudinary response is empty");
-      }
-      photoUrl = cloudinaryResponse.secure_url;
-    } catch (err) {
-      console.error("Cloudinary Upload Error:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to upload image",
-      });
-    }
+    // let photoUrl = "";
+    // try {
+    //   const cloudinaryResponse = await uploadImageToCloudinary(
+    //     photo,
+    //     process.env.FOLDER_NAME
+    //   );
+    //   if (!cloudinaryResponse) {
+    //     throw new Error("Cloudinary response is empty");
+    //   }
+    //   photoUrl = cloudinaryResponse.secure_url;
+    // } catch (err) {
+    //   console.error("Cloudinary Upload Error:", err);
+    //   return res.status(500).json({
+    //     success: false,
+    //     message: "Failed to upload image",
+    //   });
+    // }
 
 
-
+    
+    
     //Create user entry in database
     const user = await User.create({
       name,
@@ -113,17 +113,41 @@ exports.signUp = async (req,res) => {
       email,
       accountType,
       password: hashPassword,
-      photo:photoUrl,
       purpose,
       location,
     });
-
+    
     //return  successfull response
+    const payload = {
+      email: email,
+      id: user._id,
+      accountType: user.accountType,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+      expiresIn: "2d",
+    });
+    user.token = token;
+    user.password = undefined;
+
+    //send token to browser  cookie
+    const options = {
+      expires: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    };
+
+    res.cookie("token", token, options).status(200).json({
+      success: true,
+      token,
+      user,
+      msg: "Logged in successfully ",
+    });
     return res.status(200).json({
       success: true,
       msg: "User registered successfully ",
       user,
     });
+
   } catch (error) {
     console.error("Error occuring while registering:", error.message);
     console.error(error);
